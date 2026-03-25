@@ -1,0 +1,63 @@
+[package]
+name = "cliptunnel"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Forward Mac clipboard images to remote Linux devboxes over SSH"
+license = "MIT"
+
+[lib]
+name = "cliptunnel"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cliptunnel"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4.6", features = ["derive", "env"] }
+
+# Async runtime + HTTP server
+tokio = { version = "1.49", features = ["full"] }
+axum = "0.8"
+
+# Clipboard (Mac only)
+arboard = { version = "3.6", optional = true, features = ["image-data"] }
+
+# Image encoding
+image = { version = "0.25", optional = true, default-features = false, features = ["png", "jpeg"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+
+# Crypto / hashing
+sha2 = "0.10"
+rand = "0.9"
+base64 = "0.22"
+hex = "0.4"
+subtle = "2"
+
+# Filesystem + process
+dirs = "6"
+tempfile = "3"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1"
+
+# Colored terminal output
+colored = "3"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+hyper = "1"
+serde_json = "1"
+
+[features]
+default = ["daemon"]
+daemon = ["dep:arboard", "dep:image"]

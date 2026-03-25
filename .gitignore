@@ -1,0 +1,11 @@
+/target
+.DS_Store
+*.swp
+*.swo
+*~
+.claude/
+CLAUDE.md
+.env
+*.pem
+*.key
+cobertura.xml
