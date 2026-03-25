@@ -1,0 +1,58 @@
+amends "package://github.com/jdx/hk/releases/download/v1.39.0/hk@1.39.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.39.0/hk@1.39.0#/Builtins.pkl"
+
+// Step definitions
+local fmt = new Step {
+    glob = List("**/*.rs")
+    check = "cargo fmt --check"
+    fix = "cargo fmt"
+}
+local clippy = new Step {
+    glob = List("**/*.rs", "Cargo.toml")
+    check = "cargo clippy --all-targets -- -D warnings"
+}
+local test = new Step {
+    check = "cargo test --lib"
+}
+local coverage = new Step {
+    // Ratchet: 25% -> 30% -> 50% -> 80%
+    check = "cargo tarpaulin --lib --engine llvm --fail-under 25"
+}
+local deny = new Step {
+    glob = List("Cargo.toml", "Cargo.lock")
+    check = "cargo deny check"
+}
+local audit = new Step {
+    glob = List("Cargo.lock")
+    check = "cargo audit"
+}
+
+hooks {
+    // Fast (<5s) — every commit
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps {
+            ["cargo-fmt"] = fmt
+            ["cargo-clippy"] = clippy
+            ["cargo-test"] = test
+        }
+    }
+    // Full suite — every push
+    ["pre-push"] {
+        steps {
+            ["cargo-fmt"] = fmt
+            ["cargo-clippy"] = clippy
+            ["cargo-test"] = test
+            ["cargo-coverage"] = coverage
+            ["cargo-deny"] = deny
+            ["cargo-audit"] = audit
+        }
+    }
+    ["fix"] {
+        fix = true
+        steps {
+            ["cargo-fmt"] = fmt
+        }
+    }
+}

@@ -1,0 +1,82 @@
+name: CI
+
+# Same quality bar as local pre-commit hooks (hk.pkl)
+# If you change a check here, update hk.pkl too (and vice versa)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  quality:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+
+      # 1. Format
+      - name: cargo fmt --check
+        run: cargo fmt --check
+
+      # 2. Clippy
+      - name: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
+
+      # 3. Tests
+      - name: cargo test --lib
+        run: cargo test --lib
+
+      # 4. Integration tests
+      - name: cargo test --test daemon_test
+        run: cargo test --test daemon_test
+
+      # 5. Coverage (ratchet: 25% -> 30% -> 50% -> 80%)
+      - name: cargo tarpaulin --fail-under 25
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --lib --engine llvm --fail-under 25
+
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # 6. Audit
+      - name: cargo audit
+        uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 7. Deny (licenses, bans, sources)
+      - name: cargo deny check
+        uses: EmbarkStudios/cargo-deny-action@v2
+
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release
+        if: matrix.os == 'macos-latest'
+      - run: cargo build --release --no-default-features
+        if: matrix.os == 'ubuntu-latest'
