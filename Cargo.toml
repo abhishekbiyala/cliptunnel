@@ -32,7 +32,7 @@ image = { version = "0.25", optional = true, default-features = false, features 
 serde = { version = "1", features = ["derive"] }
 
 # Crypto / hashing
-sha2 = "0.10"
+sha2 = "0.11"
 rand = "0.9"
 base64 = "0.22"
 hex = "0.4"
