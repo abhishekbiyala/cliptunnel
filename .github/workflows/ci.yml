@@ -46,7 +46,7 @@ jobs:
           cargo install cargo-tarpaulin
           cargo tarpaulin --lib --engine llvm --fail-under 25 --out xml
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: cobertura.xml
           fail_ci_if_error: false
