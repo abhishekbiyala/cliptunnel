@@ -33,7 +33,7 @@ serde = { version = "1", features = ["derive"] }
 
 # Crypto / hashing
 sha2 = "0.10"
-rand = "0.9"
+rand = "0.10"
 base64 = "0.22"
 hex = "0.4"
 subtle = "2"
