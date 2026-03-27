@@ -70,7 +70,7 @@ See [Advanced Usage](#persistent-tunnel-mosh-users) for details.
 Mac (local)                              Remote Linux (headless)
 ┌──────────────────────┐                 ┌────────────────────────────────┐
 │ cliptunnel daemon    │   SSH Tunnel    │ xclip/xsel/wl-paste shims      │
-│ (HTTP on :18442)     │◄───────────────►│ (curl → localhost:18442)       │
+│ (HTTP on :18442)     │◄───────────────►│ (curl -> localhost:18442)      │
 │                      │  RemoteForward  │                                │
 │ reads Mac clipboard  │                 │ X11 bridge (Xvfb + owner)      │
 │ serves PNG over HTTP │                 │ for Codex/Copilot CLI          │
