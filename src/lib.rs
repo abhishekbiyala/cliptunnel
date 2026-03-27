@@ -7,4 +7,5 @@ pub mod disconnect;
 pub mod doctor;
 pub mod paste;
 pub mod remote;
+pub mod setup;
 pub mod tunnel;

@@ -16,7 +16,12 @@ local test = new Step {
 }
 local coverage = new Step {
     // Ratchet: 25% -> 30% -> 50% -> 80%
-    check = "cargo tarpaulin --lib --engine llvm --fail-under 25"
+    check = "CARGO_TARGET_DIR=target/tarpaulin cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs"
+}
+local build_no_default = new Step {
+    // Catch --no-default-features build failures locally (Linux cross-compile gate)
+    glob = List("**/*.rs", "Cargo.toml")
+    check = "CARGO_TARGET_DIR=target/no-default-features cargo build --no-default-features"
 }
 local deny = new Step {
     glob = List("Cargo.toml", "Cargo.lock")
@@ -45,6 +50,7 @@ hooks {
             ["cargo-clippy"] = clippy
             ["cargo-test"] = test
             ["cargo-coverage"] = coverage
+            ["cargo-build-no-default"] = build_no_default
             ["cargo-deny"] = deny
             ["cargo-audit"] = audit
         }

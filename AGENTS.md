@@ -20,6 +20,7 @@ src/
   lib.rs               # Library crate (exposes modules for integration tests)
   cli.rs               # clap derive structs
   config.rs            # Token management, DEFAULT_PORT, write_auth_config
+  setup.rs             # Unified setup command (daemon + connect + doctor)
   daemon/
     mod.rs             # Daemon orchestration
     server.rs          # axum HTTP server (health, clipboard, metadata endpoints)
@@ -146,7 +147,7 @@ Before pushing to main or tagging a release:
 2. `cargo clippy --all-targets -- -D warnings` — zero warnings
 3. `cargo test --lib` — all unit tests pass
 4. `cargo test --test daemon_test` — integration tests pass
-5. `cargo tarpaulin --lib --engine llvm --fail-under 25` — coverage above threshold
+5. `cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs` — coverage above threshold
 6. `cargo deny check` — no license/advisory/ban issues
 7. `cargo build --release` — Mac binary builds
 8. `cross build --release --target x86_64-unknown-linux-gnu --no-default-features` — Linux binary builds

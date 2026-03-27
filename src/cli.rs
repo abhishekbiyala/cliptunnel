@@ -18,6 +18,24 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// One-command setup: install daemon, deploy to remote, verify
+    Setup {
+        /// SSH destination (user@host or Host alias)
+        host: String,
+
+        /// Enable X11 bridge (Xvfb) on remote for Codex CLI support
+        #[arg(long)]
+        x11: bool,
+
+        /// Path to pre-built Linux binary (skip download)
+        #[arg(long)]
+        binary: Option<PathBuf>,
+
+        /// Target architecture for remote (x86_64 or aarch64)
+        #[arg(long, default_value = "x86_64")]
+        arch: String,
+    },
+
     /// Start the local clipboard daemon (Mac)
     Daemon {
         /// Run in foreground (don't daemonize)

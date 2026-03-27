@@ -13,6 +13,14 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     match cli.command {
+        Command::Setup {
+            host,
+            x11,
+            binary,
+            arch,
+        } => {
+            cliptunnel::setup::run(&host, x11, binary.as_deref(), &arch).await?;
+        }
         Command::Daemon {
             foreground: _,
             install,
