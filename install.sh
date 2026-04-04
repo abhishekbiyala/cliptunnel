@@ -79,6 +79,29 @@ get_release_url() {
         err "GitHub API rate limited. Try again later or set GITHUB_TOKEN."
     fi
 
+    if [ "$HTTP_CODE" = "404" ]; then
+        rm -f "$TMPJSON"
+        if [ "$VERSION" = "latest" ]; then
+            err "No releases found for ${REPO}.
+
+    The project has not published any releases yet.
+    You can build from source instead:
+      cargo install --git https://github.com/${REPO}"
+        else
+            err "Release '${VERSION}' not found for ${REPO}.
+
+    Check available versions at:
+      https://github.com/${REPO}/releases"
+        fi
+    fi
+
+    if [ -z "$HTTP_CODE" ] || { [ "$HTTP_CODE" -ge 400 ] 2>/dev/null; }; then
+        rm -f "$TMPJSON"
+        err "Failed to fetch release info from GitHub (HTTP ${HTTP_CODE:-unknown}).
+
+    Check your internet connection and try again."
+    fi
+
     # Anchor the grep to match exact asset name (not supersets)
     DOWNLOAD_URL=$(grep "browser_download_url.*${ASSET_NAME}\"" "$TMPJSON" | head -1 | cut -d '"' -f 4)
     rm -f "$TMPJSON"
@@ -87,8 +110,9 @@ get_release_url() {
         err "Could not find release asset '${ASSET_NAME}' at:
     https://github.com/${REPO}/releases/${VERSION}
 
-    If this is a new project, you may need to create a release first.
-    See: https://github.com/${REPO}#building-from-source"
+    Expected asset: ${ASSET_NAME}
+    This may mean the release was not built for your platform ($(uname -s) $(uname -m)).
+    See: https://github.com/${REPO}/releases"
     fi
 }
 
