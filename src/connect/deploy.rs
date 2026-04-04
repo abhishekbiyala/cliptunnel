@@ -11,15 +11,15 @@ const REMOTE_BINARY_NAME: &str = "cliptunnel";
 const GITHUB_REPO: &str = "abhishekbiyala/cliptunnel";
 
 /// Deploy the cliptunnel binary and token to the remote host, then run install-remote.
+///
+/// If the remote already has the binary installed, skip the binary deployment
+/// and just update the token + re-run install-remote.
 pub async fn deploy_to_remote(
     host: &str,
     binary: Option<&Path>,
     arch: &str,
     x11: bool,
 ) -> Result<()> {
-    let binary_path = resolve_binary(binary, arch).await?;
-    tracing::info!("using binary: {}", binary_path.display());
-
     // Ensure remote directories exist
     tracing::debug!("creating remote directories");
     run_ssh(
@@ -29,20 +29,30 @@ pub async fn deploy_to_remote(
     .await
     .context("failed to create remote directories")?;
 
-    // SCP the binary
-    let remote_bin = format!("{}:~/{}/{}", host, REMOTE_BIN_DIR, REMOTE_BINARY_NAME);
-    tracing::info!("copying binary to {}", remote_bin);
-    run_scp(&binary_path, &remote_bin)
-        .await
-        .context("failed to SCP binary to remote")?;
+    // Check if the binary already exists on the remote
+    let remote_has_binary = check_remote_binary(host).await;
 
-    // Make it executable
-    run_ssh(
-        host,
-        &format!("chmod +x ~/{}/{}", REMOTE_BIN_DIR, REMOTE_BINARY_NAME),
-    )
-    .await
-    .context("failed to chmod remote binary")?;
+    if remote_has_binary && binary.is_none() {
+        tracing::info!("remote already has cliptunnel binary, skipping binary deployment");
+    } else {
+        let binary_path = resolve_binary(binary, arch).await?;
+        tracing::info!("using binary: {}", binary_path.display());
+
+        // SCP the binary
+        let remote_bin = format!("{}:~/{}/{}", host, REMOTE_BIN_DIR, REMOTE_BINARY_NAME);
+        tracing::info!("copying binary to {}", remote_bin);
+        run_scp(&binary_path, &remote_bin)
+            .await
+            .context("failed to SCP binary to remote")?;
+
+        // Make it executable
+        run_ssh(
+            host,
+            &format!("chmod +x ~/{}/{}", REMOTE_BIN_DIR, REMOTE_BINARY_NAME),
+        )
+        .await
+        .context("failed to chmod remote binary")?;
+    }
 
     // SCP the token
     let token_path = config::token_path();
@@ -75,6 +85,15 @@ pub async fn deploy_to_remote(
 
     tracing::info!("deployment to {} complete", host);
     Ok(())
+}
+
+/// Check if the cliptunnel binary already exists on the remote host.
+async fn check_remote_binary(host: &str) -> bool {
+    let cmd = format!("test -x ~/{}/{}", REMOTE_BIN_DIR, REMOTE_BINARY_NAME);
+    match run_ssh(host, &cmd).await {
+        Ok(()) => true,
+        Err(_) => false,
+    }
 }
 
 /// Resolve which binary to deploy. If the user provided one, use it.
