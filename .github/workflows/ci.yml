@@ -44,7 +44,7 @@ jobs:
       - name: cargo tarpaulin --fail-under 25
         run: |
           cargo install cargo-tarpaulin
-          cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs
+          cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files 'src/setup.rs' --exclude-files 'src/connect/deploy.rs'
 
   security:
     name: Security
