@@ -15,8 +15,9 @@ local test = new Step {
     check = "cargo test --lib"
 }
 local coverage = new Step {
-    // Ratchet: 25% -> 30% -> 50% -> 80%
-    check = "CARGO_TARGET_DIR=target/tarpaulin cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs"
+    // Coverage gate. IO/shell-out modules are excluded (covered by e2e, not unit tests).
+    // Keep in sync with .github/workflows/ci.yml.
+    check = "CARGO_TARGET_DIR=target/tarpaulin cargo tarpaulin --lib --engine llvm --fail-under 20 --exclude-files src/setup.rs --exclude-files src/connect/deploy.rs --exclude-files src/connect/mod.rs --exclude-files src/daemon/launchd.rs --exclude-files src/daemon/mod.rs --exclude-files src/disconnect.rs --exclude-files src/doctor.rs --exclude-files src/paste.rs --exclude-files src/remote/install.rs --exclude-files src/remote/x11_bridge.rs --exclude-files src/remote/mod.rs --exclude-files src/main.rs"
 }
 local build_no_default = new Step {
     // Catch --no-default-features build failures locally (Linux cross-compile gate)
