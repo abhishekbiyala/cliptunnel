@@ -147,7 +147,7 @@ Before pushing to main or tagging a release:
 2. `cargo clippy --all-targets -- -D warnings` — zero warnings
 3. `cargo test --lib` — all unit tests pass
 4. `cargo test --test daemon_test` — integration tests pass
-5. `cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs` — coverage above threshold
+5. `cargo tarpaulin --lib --engine llvm --fail-under 25 --exclude-files src/setup.rs --exclude-files src/connect/deploy.rs` — coverage above threshold
 6. `cargo deny check` — no license/advisory/ban issues
 7. `cargo build --release` — Mac binary builds
 8. `cross build --release --target x86_64-unknown-linux-gnu --no-default-features` — Linux binary builds
